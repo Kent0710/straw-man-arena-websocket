@@ -100,6 +100,92 @@ const server = Bun.serve({
 
             if (data.type === "join") {
                 const player = data.payload.player;
+                
+                // Position player based on infection status
+                const placedPlayers = Array.from(players.values());
+                
+                if (player.isInfected) {
+                    // Place infected players in the center
+                    const CENTER_ZONE = {
+                        x: ARENA_WIDTH / 2 - 100,
+                        y: ARENA_HEIGHT / 2 - 75,
+                        width: 200,
+                        height: 150,
+                    };
+                    
+                    let placed = false;
+                    let attempts = 0;
+                    
+                    while (!placed && attempts < MAX_SPAWN_ATTEMPTS) {
+                        const x = CENTER_ZONE.x + Math.random() * CENTER_ZONE.width;
+                        const y = CENTER_ZONE.y + Math.random() * CENTER_ZONE.height;
+                        
+                        const tempPlayer = { ...player, x, y };
+                        const overlaps = placedPlayers.some((p) => isOverlapping(tempPlayer, p));
+                        
+                        if (!overlaps) {
+                            player.x = x;
+                            player.y = y;
+                            placed = true;
+                        }
+                        attempts++;
+                    }
+                    
+                    if (!placed) {
+                        // Fallback to center if no safe spot found
+                        player.x = ARENA_WIDTH / 2 - PLAYER_SIZE / 2;
+                        player.y = ARENA_HEIGHT / 2 - PLAYER_SIZE / 2;
+                    }
+                } else {
+                    // Place regular players at edges/corners
+                    const EDGE_MARGIN = 80;
+                    
+                    let placed = false;
+                    let attempts = 0;
+                    
+                    while (!placed && attempts < MAX_SPAWN_ATTEMPTS) {
+                        // Randomly choose an edge: 0=top, 1=bottom, 2=left, 3=right
+                        const edge = Math.floor(Math.random() * 4);
+                        let x: number, y: number;
+                        
+                        switch (edge) {
+                            case 0: // Top edge
+                                x = EDGE_MARGIN + Math.random() * (ARENA_WIDTH - 2 * EDGE_MARGIN - PLAYER_SIZE);
+                                y = Math.random() * EDGE_MARGIN;
+                                break;
+                            case 1: // Bottom edge
+                                x = EDGE_MARGIN + Math.random() * (ARENA_WIDTH - 2 * EDGE_MARGIN - PLAYER_SIZE);
+                                y = ARENA_HEIGHT - EDGE_MARGIN - PLAYER_SIZE + Math.random() * EDGE_MARGIN;
+                                break;
+                            case 2: // Left edge
+                                x = Math.random() * EDGE_MARGIN;
+                                y = EDGE_MARGIN + Math.random() * (ARENA_HEIGHT - 2 * EDGE_MARGIN - PLAYER_SIZE);
+                                break;
+                            case 3: // Right edge
+                            default:
+                                x = ARENA_WIDTH - EDGE_MARGIN - PLAYER_SIZE + Math.random() * EDGE_MARGIN;
+                                y = EDGE_MARGIN + Math.random() * (ARENA_HEIGHT - 2 * EDGE_MARGIN - PLAYER_SIZE);
+                                break;
+                        }
+                        
+                        const tempPlayer = { ...player, x, y };
+                        const overlaps = placedPlayers.some((p) => isOverlapping(tempPlayer, p));
+                        
+                        if (!overlaps) {
+                            player.x = x;
+                            player.y = y;
+                            placed = true;
+                        }
+                        attempts++;
+                    }
+                    
+                    if (!placed) {
+                        // Fallback to a corner if no safe spot found
+                        player.x = EDGE_MARGIN;
+                        player.y = EDGE_MARGIN;
+                    }
+                }
+                
                 players.set(ws, player);
                 broadcastPlayersImmediate(); // Immediate for join events
                 // Send current timer state to new player
