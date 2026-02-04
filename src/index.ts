@@ -209,6 +209,22 @@ const server = Bun.serve({
                 stopTimer();
             }
 
+            if (data.type === "game:restart") {
+                // Reset all players' infection status (only Kent stays infected)
+                for (const player of players.values()) {
+                    player.isInfected = player.name === "Kent";
+                }
+                
+                // Reset positions
+                resetAllPositions();
+                
+                // Broadcast reset to all clients
+                broadcastPlayersImmediate("players:reset");
+                
+                // Start the game again
+                startTimer();
+            }
+
             if (data.type === "player:gender") {
                 const { playerId, gender } = data.payload;
 
