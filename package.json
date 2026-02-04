@@ -1,8 +1,13 @@
 {
   "name": "straw-man-arena-websocket",
   "module": "index.ts",
+  "main": "src/index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "bun run --watch src/index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
