@@ -77,8 +77,10 @@ function broadcastTimer() {
     }
 }
 
+const PORT = process.env.PORT || 5000;
+
 const server = Bun.serve({
-    port: 5000,
+    port: PORT,
 
     fetch(req, server) {
         if (server.upgrade(req)) {
