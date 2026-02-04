@@ -81,6 +81,7 @@ const PORT = process.env.PORT || 5000;
 
 const server = Bun.serve({
     port: PORT,
+    hostname: "0.0.0.0", // Bind to all interfaces for Railway
 
     fetch(req, server) {
         if (server.upgrade(req)) {
@@ -440,4 +441,4 @@ function isOverlapping(a: Player, b: Player): boolean {
     );
 }
 
-console.log(`Server running at ws://${server.hostname}:${server.port}`);
+console.log(`Server running on port ${server.port}`);
